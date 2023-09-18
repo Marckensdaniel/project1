@@ -58,6 +58,7 @@ def main(server_host, server_port, file_path):
     except ValueError:
         sys.stderr.write("ERROR: Invalid port number. Please provide a valid integer port.\n")
         sys.exit(1)
+
     # Create a socket and set timeout
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(10)
