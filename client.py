@@ -70,7 +70,7 @@ def main(server_host, server_port, file_path):
         # Receive two full commands from the server
         for _ in range(2):
             command = receive_command(sock)
-            if command != b"accio\r\n":
+            if command != b"accio\r\n\r\n":
                 handle_error(sock, "Received incorrect command from server.")
             send_confirmation(sock)
 
