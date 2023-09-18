@@ -49,6 +49,15 @@ def send_file(sock, file_path):
 
 # Main function
 def main(server_host, server_port, file_path):
+    if not server_host or not server_port or not file_path:
+        sys.stderr.write("ERROR: Invalid command line arguments. Usage: client.py <server_host> <server_port> <file_path>\n")
+        sys.exit(1)
+
+    try:
+        server_port = int(server_port)
+    except ValueError:
+        sys.stderr.write("ERROR: Invalid port number. Please provide a valid integer port.\n")
+        sys.exit(1)
     # Create a socket and set timeout
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(10)
