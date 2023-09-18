@@ -49,10 +49,6 @@ def send_file(sock, file_path):
 
 # Main function
 def main(server_host, server_port, file_path):
-    if not server_host or not server_port or not file_path:
-        sys.stderr.write("ERROR: Invalid command line arguments. Usage: client.py <server_host> <server_port> <file_path>\n")
-        sys.exit(1)
-
     # Create a socket and set timeout
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(10)
@@ -80,19 +76,7 @@ def main(server_host, server_port, file_path):
 
 # Run the client with command line arguments
 if __name__ == "__main__":
-    if len(sys.argv) != 4:
-        sys.stderr.write("ERROR: Invalid number of command line arguments. Usage: client.py <server_host> <server_port> <file_path>\n")
-        sys.exit(1)
-    
-    try:
-        server_host = sys.argv[1]
-        server_port = int(sys.argv[2])
-        file_path = sys.argv[3]
-    except ValueError:
-        sys.stderr.write("ERROR: Invalid port number. Usage: client.py <server_host> <server_port> <file_path>\n")
-        sys.exit(1)
-
-    main(server_host, server_port, file_path)
+    if len(sys.argv) < 4:
         sys.stderr.write("ERROR: Insufficient command line arguments.\n")
         sys.exit(1)
     server_host = sys.argv[1]
