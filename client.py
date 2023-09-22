@@ -1,12 +1,25 @@
 import socket
 import sys
+import errno
+
+# Function to check hostname
+def check_hostname(sock, hostname):
+    try:
+        # Use gethostbyname_ex to get the IP address of the given hostname
+        _, _, _ = socket.gethostbyname_ex(hostname)
+        print(f"{hostname} exists.")
+    except socket.gaierror as e:
+        if e.errno == socket.EAI_NONAME:
+            handle_error(sock, f"{hostname} does not exist or is incorrect.")
+        else:
+            handle_error(sock, f"Error occurred while checking {hostname}: {e.strerror}")
 
 # Function to gracefully terminate the connection
 def terminate_connection(sock):
     sock.close()
     sys.exit(1)
 
-# Function to handle network or server errors
+# Function to handle network
 def handle_error(sock, error_message):
     sys.stderr.write("ERROR: " + error_message + "\n")
     terminate_connection(sock)
@@ -34,6 +47,11 @@ def send_confirmation(sock):
 # Function to send file to the server
 def send_file(sock, file_path):
     try:
+        # Add headers here before sending the file
+        headers = "X-Custom-Header: Value\r\n"
+
+        sock.sendall(headers.encode())
+
         with open(file_path, "rb") as file:
             while True:
                 data = file.read(10000)
@@ -41,6 +59,9 @@ def send_file(sock, file_path):
                     break
                 try:
                     sock.sendall(data)
+                    
+                    print(f"File '{file_path}' sent successfully")
+
                 except socket.timeout:
                     handle_error(sock, "Timeout occurred while sending file to server.")
     except FileNotFoundError:
@@ -49,19 +70,13 @@ def send_file(sock, file_path):
 
 # Main function
 def main(server_host, server_port, file_path):
-    if not server_host or not server_port or not file_path:
-        sys.stderr.write("ERROR: Invalid command line arguments. Usage: client.py <server_host> <server_port> <file_path>\n")
-        sys.exit(1)
-
-    try:
-        server_port = int(server_port)
-    except ValueError:
-        sys.stderr.write("ERROR: Invalid port number. Please provide a valid integer port.\n")
-        sys.exit(1)
 
     # Create a socket and set timeout
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(10)
+
+    # check hostname
+    check_hostname(sock, server_host)
 
     try:
         # Connect to the server
@@ -70,7 +85,7 @@ def main(server_host, server_port, file_path):
         # Receive two full commands from the server
         for _ in range(2):
             command = receive_command(sock)
-            if command != b"accio\r\n\r\n":
+            if command != b"accio\r\n":
                 handle_error(sock, "Received incorrect command from server.")
             send_confirmation(sock)
 
@@ -79,6 +94,9 @@ def main(server_host, server_port, file_path):
 
     except socket.timeout:
         handle_error(sock, "Timeout occurred while connecting to server.")
+
+    except socket.gaierror as e:
+        handle_error(sock, f"Failed to connect to server: {e.strerror}")
 
     finally:
         # Terminate the connection
