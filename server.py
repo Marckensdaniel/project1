@@ -39,7 +39,7 @@ def handle_signal(signum, frame):
 def start_server(port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server_socket.bind(('131.94.128.43', 54634))
+    server_socket.bind(('0.0.0.0', port))
     server_socket.listen(10)  # Maximum of 10 simultaneous connections
 
     # Set up signal handlers
