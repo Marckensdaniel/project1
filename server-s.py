@@ -9,8 +9,7 @@ def handle_connection(client_socket):
         sys.stderr.write("ERROR: No data received\n")
     else:
         # Send the desired message back to the client
-        message = "accio (0/5)"
-        client_socket.sendall(message.encode())
+        client_socket.sendall(data)
     
     client_socket.close()
 
