@@ -19,7 +19,7 @@ def terminate_connection(sock):
     sock.close()
     sys.exit(1)
 
-# Function to handle network
+# Function to handle network or server errors
 def handle_error(sock, error_message):
     sys.stderr.write("ERROR: " + error_message + "\n")
     terminate_connection(sock)
@@ -79,7 +79,7 @@ def main(server_host, server_port, file_path):
     check_hostname(sock, server_host)
 
     try:
-        # Connect to the server
+        # Connect  server
         sock.connect((server_host, server_port))
 
         # Receive two full commands from the server
