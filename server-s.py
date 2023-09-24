@@ -3,8 +3,7 @@ import socket
 import sys
 
 def handle_connection(client_socket):
-    # Process the client connection here
-    # For this example, we'll simply echo back any data received
+    # Process the client connection
     data = client_socket.recv(4096)
     if not data:
         sys.stderr.write("ERROR: No data received\n")
@@ -14,13 +13,13 @@ def handle_connection(client_socket):
     client_socket.close()
 
 def handle_signal(signum, frame):
-    # Handle SIGQUIT, SIGTERM, SIGINT signals
+    # Handle  SIGINT signals
     sys.exit(0)
 
 def start_server(port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind(('131.94.128', 54634))
-    server_socket.listen(10)  # Maximum of 10 simultaneous connections
+    server_socket.bind(('131.94.128.43', 54634))
+    server_socket.listen(10)
     
     # Set up signal handlers
     signal.signal(signal.SIGQUIT, handle_signal)
