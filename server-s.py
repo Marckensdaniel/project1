@@ -37,13 +37,12 @@ def start_server(port):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        sys.stderr.write("ERROR: Port number not provided\n")
-        sys.exit(1)
+    sys.stderr.write("ERROR: Port number not provided\n")
+    sys.exit(1)
 
-    try:
-        port = int(sys.argv[1])
-    except ValueError:
-        sys.stderr.write("ERROR: Invalid port number\n")
-        sys.exit(1)
+try:
+    port = int(sys.argv[1])
+except ValueError:
+    sys.stderr.write("ERROR: Invalid port number\n")
+    sys.exit(1)
 
-    start_server(port)
