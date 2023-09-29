@@ -58,7 +58,7 @@ def send_file(sock, file_path):
                 if not data:
                     break
                 try:
-                    sock.sendall(data)
+                    sock.send(data)
                     
                     print(f"File '{file_path}' sent successfully")
 
@@ -79,15 +79,26 @@ def main(server_host, server_port, file_path):
     check_hostname(sock, server_host)
 
     try:
-        # Connect  server
+        # Connect to the server
         sock.connect((server_host, server_port))
+        
+        ##################### modification don =e here, sending confirmations twice
+        #send data first
+        sock.send(b"confirm-accio\r\n")
+        
+        #expect to receive
+        command = receive_command(sock)
+        print(command)
+        if command != b"accio\r\n":
+        	handle_error(sock, "Received incorrect command from server.")
+        	
+        #send another confirmation
+        sock.send(b"confirm-accio-again\r\n")
+        #expect to receive
+        command = receive_command(sock)
+        if command != b"accio\r\n":
+        	handle_error(sock, "Received incorrect command from server.")
 
-        # Receive two full commands from the server
-        for _ in range(2):
-            command = receive_command(sock)
-            if command != b"accio\r\n":
-                handle_error(sock, "Received incorrect command from server.")
-            send_confirmation(sock)
 
         # Send the file to the server
         send_file(sock, file_path)
