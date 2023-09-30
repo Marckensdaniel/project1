@@ -1,6 +1,7 @@
 import socket
 import sys
 import errno
+import time
 
 # Function to check hostname
 def check_hostname(sock, hostname):
@@ -14,7 +15,6 @@ def check_hostname(sock, hostname):
         else:
             handle_error(sock, f"Error occurred while checking {hostname}: {e.strerror}")
 
-# Function to gracefully terminate the connection
 def terminate_connection(sock):
     sock.close()
     sys.exit(1)
@@ -59,11 +59,11 @@ def send_file(sock, file_path):
                     break
                 try:
                     sock.send(data)
-                    
-                    print(f"File '{file_path}' sent successfully")
-
                 except socket.timeout:
                     handle_error(sock, "Timeout occurred while sending file to server.")
+                time.sleep(10)
+        print(f"File '{file_path}' sent successfully")
+       
     except FileNotFoundError:
         sys.stderr.write("ERROR: Specified file not found.\n")
         terminate_connection(sock)
@@ -71,7 +71,7 @@ def send_file(sock, file_path):
 # Main function
 def main(server_host, server_port, file_path):
 
-    # Create a socket and set timeout
+    # Create a socket  set timeout
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(10)
 
@@ -82,19 +82,15 @@ def main(server_host, server_port, file_path):
         # Connect to the server
         sock.connect((server_host, server_port))
         
-        ##################### modification don =e here, sending confirmations twice
-        #send data first
         sock.send(b"confirm-accio\r\n")
         
         #expect to receive
         command = receive_command(sock)
-        print(command)
         if command != b"accio\r\n":
         	handle_error(sock, "Received incorrect command from server.")
         	
         #send another confirmation
         sock.send(b"confirm-accio-again\r\n")
-        #expect to receive
         command = receive_command(sock)
         if command != b"accio\r\n":
         	handle_error(sock, "Received incorrect command from server.")
@@ -110,15 +106,17 @@ def main(server_host, server_port, file_path):
         handle_error(sock, f"Failed to connect to server: {e.strerror}")
 
     finally:
-        # Terminate the connection
         terminate_connection(sock)
 
-# Run the client with command line arguments
+# Run the client command line 
 if __name__ == "__main__":
     if len(sys.argv) < 4:
         sys.stderr.write("ERROR: Insufficient command line arguments.\n")
         sys.exit(1)
     server_host = sys.argv[1]
     server_port = int(sys.argv[2])
+    if server_port < 0 or server_port > 65535:
+        sys.stderr.write("ERROR: invalid server port.\n")
+        sys.exit(1)
     file_path = sys.argv[3]
     main(server_host, server_port, file_path)
