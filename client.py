@@ -3,10 +3,10 @@ import sys
 import errno
 
 # Function to check hostname
-def checkHostname(sock, hostname):
+def check_hostname(sock, hostname):
     try:
-        # Use gethostbyname to get the IP address 
-        _, _, _ = socket.gethostbyname(hostname)
+        # Use gethostbyname_ex to get the IP address of the given hostname
+        _, _, _ = socket.gethostbyname_ex(hostname)
         print(f"{hostname} exists.")
     except socket.gaierror as e:
         if e.errno == socket.EAI_NONAME:
@@ -14,17 +14,18 @@ def checkHostname(sock, hostname):
         else:
             handle_error(sock, f"Error occurred while checking {hostname}: {e.strerror}")
 
-def terminateConnection(sock):
+# Function to gracefully terminate the connection
+def terminate_connection(sock):
     sock.close()
     sys.exit(1)
 
-#   handle network
-def handleError(sock, error_message):
+# Function to handle network
+def handle_error(sock, error_message):
     sys.stderr.write("ERROR: " + error_message + "\n")
     terminate_connection(sock)
 
-# receive full command from the server
-def receiveCommand(sock):
+# Function to receive full command from the server
+def receive_command(sock):
     command = b""
     while b"\r\n" not in command:
         try:
@@ -36,15 +37,15 @@ def receiveCommand(sock):
         command += data
     return command
 
-# send confirmation to the server
-def sendConfirmation(sock):
+# Function to send confirmation to the server
+def send_confirmation(sock):
     try:
         sock.sendall(b"confirm\r\n")
     except socket.timeout:
         handle_error(sock, "Timeout occurred while sending confirmation to server.")
 
-#  send file to the server
-def sendFile(sock, file_path):
+# Function to send file to the server
+def send_file(sock, file_path):
     try:
         # Add headers here before sending the file
         headers = "X-Custom-Header: Value\r\n"
