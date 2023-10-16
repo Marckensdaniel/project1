@@ -2,7 +2,7 @@ import signal
 import socket
 import sys
 
-def handle_connection(client_socket,address):
+def handleConnection(client_socket,address):
      client_socket.settimeout(10)
      try:
         print(f"Client {address[0]}:{address[1]} connected")
@@ -42,11 +42,11 @@ def handle_connection(client_socket,address):
      finally:
             client_socket.close()
 
-def handle_signal(signum, frame):
+def handleSignal(signum, frame):
     # Handle SIGQUIT, SIGTERM, SIGINT signals
     sys.exit(0)
 
-def start_server(port):
+def startServer(port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind(('0.0.0.0', port))
     server_socket.listen(10)  # Maximum of 10 simultaneous connections
