@@ -1,6 +1,5 @@
 import socket
 import sys
-import errno
 import time
 
 # Function to check hostname
