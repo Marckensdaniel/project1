@@ -7,7 +7,7 @@ import time
 
 FILE_DIR = "/save"
 
-def handle_connection(client_socket, connection_id):
+def handleConnection(client_socket, connection_id):
     received_data = b""
     file_path = os.path.join(FILE_DIR, f"{connection_id}.file")
 
@@ -32,11 +32,11 @@ def handle_connection(client_socket, connection_id):
         client_socket.close()
 
 
-def handle_signal(signum, frame):
+def handleSignal(signum, frame):
     sys.exit(0)
 
 
-def start_server(port):
+def startServer(port):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind(('0.0.0.0', port))
