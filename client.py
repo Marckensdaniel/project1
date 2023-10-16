@@ -3,49 +3,49 @@ import sys
 import errno
 
 # Function to check hostname
-def check_hostname(sock, hostname):
+def checkHostname(sock, hostname):
     try:
         # Use gethostbyname_ex to get the IP address of the given hostname
         _, _, _ = socket.gethostbyname_ex(hostname)
         print(f"{hostname} exists.")
     except socket.gaierror as e:
         if e.errno == socket.EAI_NONAME:
-            handle_error(sock, f"{hostname} does not exist or is incorrect.")
+            handleError(sock, f"{hostname} does not exist or is incorrect.")
         else:
-            handle_error(sock, f"Error occurred while checking {hostname}: {e.strerror}")
+            handleError(sock, f"Error occurred while checking {hostname}: {e.strerror}")
 
 # Function to gracefully terminate the connection
-def terminate_connection(sock):
+def terminateConnection(sock):
     sock.close()
     sys.exit(1)
 
 # Function to handle network
-def handle_error(sock, error_message):
+def handleError(sock, error_message):
     sys.stderr.write("ERROR: " + error_message + "\n")
-    terminate_connection(sock)
+    terminateConnection(sock)
 
 # Function to receive full command from the server
-def receive_command(sock):
+def receiveCommand(sock):
     command = b""
     while b"\r\n" not in command:
         try:
             data = sock.recv(1024)
             if not data:
-                handle_error(sock, "Failed to read command from server.")
+                handleError(sock, "Failed to read command from server.")
         except socket.timeout:
-            handle_error(sock, "Timeout occurred while receiving command from server.")
+            handleError(sock, "Timeout occurred while receiving command from server.")
         command += data
     return command
 
 # Function to send confirmation to the server
-def send_confirmation(sock):
+def sendConfirmation(sock):
     try:
         sock.sendall(b"confirm\r\n")
     except socket.timeout:
-        handle_error(sock, "Timeout occurred while sending confirmation to server.")
+        handleError(sock, "Timeout occurred while sending confirmation to server.")
 
 # Function to send file to the server
-def send_file(sock, file_path):
+def sendFile(sock, file_path):
     try:
         # Add headers here before sending the file
         headers = "X-Custom-Header: Value\r\n"
@@ -63,10 +63,10 @@ def send_file(sock, file_path):
                     print(f"File '{file_path}' sent successfully")
 
                 except socket.timeout:
-                    handle_error(sock, "Timeout occurred while sending file to server.")
+                    handleError(sock, "Timeout occurred while sending file to server.")
     except FileNotFoundError:
         sys.stderr.write("ERROR: Specified file not found.\n")
-        terminate_connection(sock)
+        terminateConnection(sock)
 
 # Main function
 def main(server_host, server_port, file_path):
@@ -76,7 +76,7 @@ def main(server_host, server_port, file_path):
     sock.settimeout(10)
 
     # check hostname
-    check_hostname(sock, server_host)
+    checkHostname(sock, server_host)
 
     try:
         # Connect to the server
@@ -84,23 +84,23 @@ def main(server_host, server_port, file_path):
 
         # Receive two full commands from the server
         for _ in range(2):
-            command = receive_command(sock)
+            command = receiveCommand(sock)
             if command != b"accio\r\n":
-                handle_error(sock, "Received incorrect command from server.")
+                handleError(sock, "Received incorrect command from server.")
             send_confirmation(sock)
 
         # Send the file to the server
-        send_file(sock, file_path)
+        sendFile(sock, file_path)
 
     except socket.timeout:
-        handle_error(sock, "Timeout occurred while connecting to server.")
+        handleError(sock, "Timeout occurred while connecting to server.")
 
     except socket.gaierror as e:
-        handle_error(sock, f"Failed to connect to server: {e.strerror}")
+        handleError(sock, f"Failed to connect to server: {e.strerror}")
 
     finally:
         # Terminate the connection
-        terminate_connection(sock)
+        terminateConnection(sock)
 
 # Run the client with command line arguments
 if __name__ == "__main__":
