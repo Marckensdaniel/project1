@@ -5,8 +5,8 @@ import time
 # Function to check hostname
 def check_hostname(sock, hostname):
     try:
-        # Use gethostbyname_ex to get the IP address of the given hostname
-        _, _, _ = socket.gethostbyname_ex(hostname)
+        # Use gethostbyname to get the IP address of the given hostname
+        _, _, _ = socket.gethostbyname(hostname)
         print(f"{hostname} exists.")
     except socket.gaierror as e:
         if e.errno == socket.EAI_NONAME:
@@ -70,7 +70,7 @@ def send_file(sock, file_path):
 # Main function
 def main(server_host, server_port, file_path):
 
-    # Create a socket  set timeout
+    # Create a socket and set timeout
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.settimeout(10)
 
@@ -80,20 +80,13 @@ def main(server_host, server_port, file_path):
     try:
         # Connect to the server
         sock.connect((server_host, server_port))
-        
-        sock.send(b"confirm-accio\r\n")
-        
-        #expect to receive
-        command = receive_command(sock)
-        if command != b"accio\r\n":
-        	handle_error(sock, "Received incorrect command from server.")
-        	
-        #send another confirmation
-        sock.send(b"confirm-accio-again\r\n")
-        command = receive_command(sock)
-        if command != b"accio\r\n":
-        	handle_error(sock, "Received incorrect command from server.")
 
+        # Receive two full commands from the server
+        for _ in range(2):
+            command = receive_command(sock)
+            if command != b"accio\r\n":
+                handle_error(sock, "Received incorrect command from server.")
+            send_confirmation(sock)
 
         # Send the file to the server
         send_file(sock, file_path)
@@ -105,7 +98,9 @@ def main(server_host, server_port, file_path):
         handle_error(sock, f"Failed to connect to server: {e.strerror}")
 
     finally:
+        # Terminate the connection
         terminate_connection(sock)
+
 
 # Run the client command line 
 if __name__ == "__main__":
